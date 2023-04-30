@@ -1,8 +1,7 @@
 ﻿#include <iostream>
 #include <ctime>
 #include <iomanip>
-#include <map>
-
+#include <cstdlib>
 
 class Track;
 class Player;
@@ -39,16 +38,17 @@ int main()
 				player->pl();
 				break;
 			case operation::pause:
-
+				player->pa();
 				break;
 			case operation::next:
-
+				player->ne();
 				break;
 			case operation::stop:
-
+				player->st();
 				break;
 			case operation::ex:
 				delete player;
+				player = nullptr;
 				return 0;
 
 			}
@@ -62,9 +62,8 @@ int main()
 
 class Track
 {
-	std::string name = "";
-	std::time_t t = std::time(nullptr);
-	std::tm date = *std::localtime(&t);
+	std::string name;
+	std::tm date;
 	int trackDuration = 0;
 	/*std::cin >> std::get_time(&in.date, "%d/%m");*/
 
@@ -94,17 +93,15 @@ public:
 	{
 		trackDuration = newDuration;
 	}
-	void getInfo(Track* track)
-	{
-		std::cout << "Track name: " << track->name << " , track date: "
-			<< std::put_time(&track->date, "%d/%m/%y") << " , duration: " << track->trackDuration << std::endl;
-	}
+	
 };
 
 class Player
 {
-	std::map<std::string, Track> playList{};
+	Track playList[8];
 	bool play = false;
+	bool pause = false;
+	Track current;
 
 public:
 	void setList()
@@ -114,51 +111,79 @@ public:
 		{
 			std::string name;
 			int dur;
-			Track* track = new Track();
 			std::cout << "Enter Track's name: ";
 			std::cin >> name;
-			track->setName(name);
-			std::cout << "Enter Day of creation: ";
+			playList[i].setName(name);
+			std::cout << "Enter Day of creation(d/m/y): ";
 			std::time_t t = std::time(nullptr);
 			std::tm date = *std::localtime(&t);
 			std::cin >> std::get_time(&date, "%d/%m/%y");
-			track->setDate(date);
+			playList[i].setDate(date);
 			std::cout << "Enter Track's duration: ";
 			std::cin >> dur;
-			track->setDuration(dur);
-			playList.insert(std::pair<std::string, Track>(name, *track));
+			playList[i].setDuration(dur);
+			
 			//delete track;
 		}
 	}
 
 	void pl()
 	{
-		if (!play)
+		if (!play && !pause)
 		{
 			std::string name;
 			std::cout << "Enter track's name: ";
 			std::cin >> name;
-			std::map<std::string, Track> :: iterator it = playList.find(name);
-			Track temp = (it->second);
-			std::cout << "Track name: " << Track::getName() << " , track date: "
-				<< std::put_time(&track->date, "%d/%m/%y") << " , duration: " << track->trackDuration << std::endl;
+			for (int i = 0; i < 8; i++)
+			{
+				if (playList[i].getName() == name)
+				{
+					std::cout << "Track name: " << playList[i].getName() << " , track date: "
+						<< std::put_time(&playList[i].getDate(), "%d/%m/%y") << " , duration: " << playList[i].getDuration() << std::endl;
+					current = playList[i];
+				}
+			}
 			play = true;
 
+		}
+		else if (pause)
+		{
+			std::cout << "Pause off!" << std::endl;
+			std::cout << "Track name: " << current.getName() << " , track date: "
+				<< std::put_time(&current.getDate(), "%d/%m/%y") << " , duration: " << current.getDuration() << std::endl;
+			
+			pause = false;
 		}
 		
 	}
 
+	void pa()
+	{
+		if (!pause)
+		{
+			std::cout << "Pause on!" << std::endl;
+			pause = true;
+		}
+	}
 
+	void ne()
+	{
+		int nextTrack = rand() % 8;
+		std::cout << "Track name: " << playList[nextTrack].getName() << " , track date: "
+			<< std::put_time(&playList[nextTrack].getDate(), "%d/%m/%y") << " , duration: " << 
+			playList[nextTrack].getDuration() << std::endl;
+		current = playList[nextTrack];
+		play = true;
+		pause = false;
+	}
+
+	void st()
+	{
+		if (play)
+		{
+			std::cout << "Stop!" << std::endl;
+			play = false;
+			pause = false;
+		}
+	}
 };
-
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
